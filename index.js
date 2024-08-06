@@ -27,6 +27,7 @@ async function run() {
   try {
   
     const volunteerCollection = client.db("volunteerDb").collection("volunteer");
+    const FormVolunteerCollection = client.db("volunteerDb").collection("formVolunteer");
 
     app.get("/volunteer", async(req, res) => {
         const result = await volunteerCollection.find().toArray();
@@ -37,6 +38,12 @@ async function run() {
         const id = req.params.id;
         const result = await volunteerCollection.findOne({_id: new ObjectId(id)})
         res.send(result)
+    });
+
+    app.post("/formVolunteer", async(req, res) => {
+      const result = await FormVolunteerCollection.insertOne(req.body)
+      console.log(result)
+      res.send(result)
     })
     
     await client.db("admin").command({ ping: 1 });
