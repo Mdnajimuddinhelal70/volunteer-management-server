@@ -27,7 +27,7 @@ async function run() {
   try {
   
     const volunteerCollection = client.db("volunteerDb").collection("volunteer");
-    const FormVolunteerCollection = client.db("volunteerDb").collection("formVolunteer");
+    const formVolunteerCollection = client.db("volunteerDb").collection("formVolunteer");
 
     app.get("/volunteer", async(req, res) => {
         const result = await volunteerCollection.find().toArray();
@@ -41,10 +41,20 @@ async function run() {
     });
 
     app.post("/formVolunteer", async(req, res) => {
-      const result = await FormVolunteerCollection.insertOne(req.body)
+      const result = await formVolunteerCollection.insertOne(req.body)
       console.log(result)
       res.send(result)
-    })
+    });
+    app.get('/needPostDetail', async(req, res) => {
+      const result = await formVolunteerCollection.find().toArray()
+      res.send(result)
+    });
+    //api for delete volnteer
+    app.delete('/deleteVolunteer/:id', async(req, res) => {
+      const result = await formVolunteerCollection.deleteOne({_id: new ObjectId(req.params.id)})
+      console.log(result)
+      res.send(result)
+    });
     
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
