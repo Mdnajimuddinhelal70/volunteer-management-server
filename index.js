@@ -44,6 +44,15 @@ async function run() {
         res.send(result);
     });
 
+    //api for request send
+    app.post('/submit-volunteer-request/:email', async (req, res) => {
+      const email = req.params.email; 
+      const requestData = req.body; 
+      requestData.email = email; 
+      const result = await formVolunteerCollection.insertOne(requestData);
+      res.send(result); 
+    });
+
     app.post("/formVolunteer", async (req, res) => {
       const result = await volunteerCollection.insertOne(req.body);
       res.send(result);
