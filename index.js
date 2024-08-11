@@ -30,11 +30,16 @@ async function run() {
           .toArray();
         res.json(result);    
     });
-          // API for showing all cards
+          // API for showing all cards and filtering
       app.get('/volunteerAll', async (req, res) => {
-          const result = await volunteerCollection.find().toArray();
+        const filter = req.query;
+        const query = {
+          postTitle: {$regex: filter.search, $options: 'i'}
+        }
+          const result = await volunteerCollection.find(query).toArray();
           res.json(result);   
       });
+
 
     app.get("/volunteerDetails/:id", async (req, res) => {  
         const id = req.params.id;
@@ -77,21 +82,26 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/volunteerPostData", async (req, res) => {
+    app.get('/volunteerPostUpdate/:id', async (req, res) => {
       const result = await formVolunteerCollection.find().toArray();
       res.send(result);
     });
+
+    app.get('/myNeedPost', async(req, res) => {
+      const result = await formVolunteerCollection.find().toArray()
+      res.send(result)
+    })
 
     app.put("/updateVolunteerPost/:id", async (req, res) => {
         const query = { _id: new ObjectId(req.params.id) };
         const data = {
           $set: {
             thumbnail: req.body.thumbnail,
-            title: req.body.title,
+            postTitle: req.body.postTitle,
             description: req.body.description,
             category: req.body.category,
             location: req.body.location,
-            volunteersNeeded: req.body.volunteersNeeded,
+            noOfVolunteersNeeded: req.body.noOfVolunteersNeeded,
             deadline: req.body.deadline,
           },
         };
@@ -104,7 +114,6 @@ async function run() {
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
-    // Optionally, add a cleanup function or client.close() if needed
   }
 }
 run().catch(console.dir);
