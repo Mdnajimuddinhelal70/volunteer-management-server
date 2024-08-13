@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
+const jwt = require("jsonwebtoken")
 const cors = require("cors");
 const port = process.env.PORT || 5000;
 
@@ -28,11 +29,36 @@ async function run() {
       .db("volunteerDb")
       .collection("formVolunteer");
 
+    //jwt related api
+      app.post('/jwt', async(req, res) => {
+        const user = req.body;
+        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+          expiresIn: '1h'
+        });
+        res.send({token});
+      });
+
+      //midlewares
+      const verifyToken = (req, res, next) => {
+        console.log('Inside varify token', req.headers.authorization);
+        if(!req.headers.authorization){
+          return res.status(401).send({message: 'forbidden access'});
+        }
+        const token = req.headers.authorization.split(' ')[1]
+         jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
+          if(err){
+            return res.status(401).send({message: 'forbidden access'})
+          }
+          req.decoded = decoded;
+          next();
+         })
+      }
+      
     app.get("/volunteer", async (req, res) => {
       const result = await volunteerCollection
         .find()
         .sort({ deadline: 1 })
-        .limit(3)
+        .limit(6)
         .toArray();
       res.json(result);
     });
@@ -103,7 +129,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/myNeedPost/:email", async (req, res) => {
+    app.get("/myNeedPost/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const result = await formVolunteerCollection.find({ email: email }).toArray();
       res.send(result);
